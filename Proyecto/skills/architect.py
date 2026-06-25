@@ -5,7 +5,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from utils.formatter import clean_text, ensure_markdown
+try:
+    from utils.formatter import clean_text, ensure_markdown
+except ModuleNotFoundError:
+    from Proyecto.utils.formatter import clean_text, ensure_markdown
 
 
 class ArchitectSkill:

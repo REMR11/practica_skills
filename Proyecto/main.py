@@ -4,10 +4,16 @@ from __future__ import annotations
 
 import streamlit as st
 
-from skills.architect import ArchitectSkill
-from skills.product_owner import ProductOwnerSkill
-from skills.qa import QASkill
-from utils.formatter import ensure_markdown
+try:
+    from skills.architect import ArchitectSkill
+    from skills.product_owner import ProductOwnerSkill
+    from skills.qa import QASkill
+    from utils.formatter import ensure_markdown
+except ModuleNotFoundError:
+    from Proyecto.skills.architect import ArchitectSkill
+    from Proyecto.skills.product_owner import ProductOwnerSkill
+    from Proyecto.skills.qa import QASkill
+    from Proyecto.utils.formatter import ensure_markdown
 
 
 def inject_styles() -> None:
