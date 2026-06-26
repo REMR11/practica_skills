@@ -5,11 +5,13 @@ from __future__ import annotations
 import streamlit as st
 
 try:
+    from config import load_settings
     from skills.architect import ArchitectSkill
     from skills.product_owner import ProductOwnerSkill
     from skills.qa import QASkill
     from utils.formatter import ensure_markdown
 except ModuleNotFoundError:
+    from Proyecto.config import load_settings
     from Proyecto.skills.architect import ArchitectSkill
     from Proyecto.skills.product_owner import ProductOwnerSkill
     from Proyecto.skills.qa import QASkill
@@ -47,6 +49,10 @@ def inject_styles() -> None:
     )
 
 
+def init_session_state() -> None:
+    st.session_state.setdefault("results", None)
+
+
 @st.cache_resource
 def build_skills() -> tuple[ProductOwnerSkill, QASkill, ArchitectSkill]:
     return ProductOwnerSkill(), QASkill(), ArchitectSkill()
@@ -82,12 +88,25 @@ def main() -> None:
         initial_sidebar_state="collapsed",
     )
     inject_styles()
+    init_session_state()
+
+    settings = load_settings()
 
     st.markdown('<div class="main-title">🧠 Generador de Documentación IA</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="subtitle">Convierte una necesidad informal en artefactos de Product Owner, QA y Arquitectura.</div>',
         unsafe_allow_html=True,
     )
+
+    if settings.use_mock_by_default:
+        st.info("Modo actual: fallback mock activo. Define ANTIGRAVITY_API_KEY para habilitar la integración real.")
+    else:
+        st.success("Modo actual: integración IA habilitada.")
+
+    with st.expander("Cómo usar esta app", expanded=False):
+        st.write("1. Describe la necesidad del cliente.")
+        st.write("2. Ejecuta el pipeline para generar Historia, QA y Arquitectura.")
+        st.write("3. Revisa los resultados en las pestañas de la interfaz.")
 
     requirement = st.text_area(
         "Necesidad del cliente",
@@ -99,7 +118,10 @@ def main() -> None:
         if not requirement.strip():
             st.warning("Por favor, ingresa una necesidad antes de ejecutar el pipeline.")
         else:
-            st.session_state["results"] = run_pipeline(requirement)
+            try:
+                st.session_state["results"] = run_pipeline(requirement)
+            except Exception as exc:  # pragma: no cover - UI safety net
+                st.error(f"No se pudo generar la documentación: {exc}")
 
     results = st.session_state.get("results")
     if not results:

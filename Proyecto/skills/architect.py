@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 try:
+    from config import is_mock_mode
     from utils.formatter import clean_text, ensure_markdown
 except ModuleNotFoundError:
+    from Proyecto.config import is_mock_mode
     from Proyecto.utils.formatter import clean_text, ensure_markdown
 
 
@@ -18,12 +19,14 @@ class ArchitectSkill:
         base_dir = Path(__file__).resolve().parents[1]
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "prompts" / "arquitectura.md"
         self.system_prompt = self._load_prompt()
-        self.use_mock = (not bool(os.getenv("ANTIGRAVITY_API_KEY"))) if use_mock is None else use_mock
+        self.use_mock = is_mock_mode() if use_mock is None else use_mock
 
     def _load_prompt(self) -> str:
         if not self.prompt_path.exists():
             raise FileNotFoundError(f"No se encontró el prompt: {self.prompt_path}")
         return self.prompt_path.read_text(encoding="utf-8").strip()
+
+
 
     def run(self, user_requirement: str) -> str:
         requirement = clean_text(user_requirement)
@@ -62,3 +65,5 @@ class ArchitectSkill:
 - **Python 3.12+** y tipado estático básico para robustez.
 - Cliente IA basado en `antigravity` (o wrapper compatible) con estrategia de retry/fallback.
 """
+
+
